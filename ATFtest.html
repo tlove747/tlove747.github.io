@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alternative Testing Form</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 20px;
+  line-height: 1.2;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header img {
+  max-width: 280px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.header h2 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: #003366;
+  font-size: 20px;
+}
+
+.section-header {
+  background-color: #808080;
+  color: white;
+  padding: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.form-row {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.form-row label {
+  min-width: 180px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.form-row input[type="text"] {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  min-width: 200px;
+}
+
+.note {
+  margin: 8px 0;
+  font-size: 0.85em;
+}
+
+.notice {
+  font-weight: bold;
+  margin: 6px 0;
+  font-size: 0.9em;
+}
+
+.instruction-box {
+  border: 1px solid #ccc;
+  padding: 5px;
+  margin: 8px 0;
+  min-height: 65px;
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+  flex-wrap: wrap;
+}
+
+.time-row label {
+  margin-right: 10px;
+  margin-bottom: 5px;
+}
+
+.time-input {
+  width: 60px;
+  padding: 5px;
+  margin: 0 5px;
+  border: 1px solid #ccc;
+}
+
+.return-options {
+  margin: 10px 0;
+}
+
+.return-option {
+  margin: 4px 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.return-option input {
+  margin-top: 3px;
+  margin-right: 10px;
+}
+
+.return-option label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.return-option input[type="text"] {
+  margin-left: 5px;
+  width: 150px;
+  padding: 3px;
+  border: 1px solid #ccc;
+}
+
+.signature-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.signature-field {
+  border-top: 1px solid black;
+  width: 300px;
+  padding-top: 5px;
+  text-align: center;
+}
+
+.signature-box {
+  width: 300px;
+  height: 60px;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+}
+
+.highlight {
+  background-color: #ffff00;
+  font-weight: bold;
+}
+
+.revision {
+  font-size: 0.7em;
+  margin-top: 10px;
+}
+
+/* Improved test time layout */
+.test-info {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.test-info-item {
+  display: flex;
+  align-items: baseline;
+  margin-right: 15px;
+  margin-bottom: 8px;
+}
+
+.test-info-item label {
+  margin-right: 5px;
+  font-weight: bold;
+}
+
+.test-info-item input {
+  width: 100px;
+  padding: 5px;
+  border: 1px solid #ccc;
+}
+
+@media print {
+  body {
+    padding: 0;
+    font-size: 10px;
+    margin: 0.5cm;
+  }
+  
+  button {
+    display: none;
+  }
+  
+  .no-print {
+    display: none;
+  }
+  
+  .instruction-box {
+    min-height: 50px;
+  }
+  
+  .header img {
+    max-width: 250px;
+  }
+  
+  .header h2 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  
+  .highlight {
+    font-size: 9px;
+  }
+  
+  .form-row, .time-row, .return-option label {
+    break-inside: avoid;
+  }
+  
+  .signature-row {
+    margin-top: 10px;
+  }
+  
+  .signature-field {
+    width: 250px;
+  }
+  
+  #clear-signature, #email-form {
+    display: none;
+  }
+}
+</style>
+</head>
+<body>
+<div class="no-print" style="margin-bottom: 20px;">
+<button onclick="window.print()">Print Form</button>
+</div>
+
+<div class="header">
+<img src="https://dacc.nmsu.edu/_assets/brand/DACC_logo.svg" alt="DACC logo" />
+<h2>ALTERNATIVE TESTING FORM</h2>
+</div>
+
+<div class="section-header">SECTION A -- completed by SAS Staff</div>
+
+<div class="form-row">
+<label for="student-name">STUDENT NAME:</label>
+<input type="text" id="student-name" name="student-name">
+</div>
+
+<div class="form-row">
+<label for="course">COURSE:</label>
+<input type="text" id="course" name="course" placeholder="Example: Math 1101">
+<label for="instructor" style="margin-left: 20px;">INSTRUCTOR:</label>
+<input type="text" id="instructor" name="instructor">
+</div>
+
+<div class="form-row">
+<label for="campus">CAMPUS TEST IS TO BE TAKEN AT:</label>
+<input type="text" id="campus" name="campus">
+</div>
+
+<div class="test-info">
+  <div class="test-info-item">
+    <label for="test-date">TEST DATE:</label>
+    <input type="text" id="test-date" name="test-date">
+  </div>
+  <div class="test-info-item">
+    <label for="test-time">TEST TIME*:</label>
+    <input type="text" id="test-time" name="test-time">
+  </div>
+</div>
+
+<div class="highlight" style="margin-top: 5px;">* TESTS CAN BE SCHEDULED TO BEGIN AT 8:00 AM AND MUST BE COMPLETED BY 5:00 PM</div>
+
+<div class="section-header">SECTION B -- completed by INSTRUCTOR</div>
+
+<div class="note">
+<strong>NOTE TO INSTRUCTORS:</strong><br>
+Tests & Cover forms should be delivered to the East Mesa, DASR RM 104A or Espina, DASH RM 117 SAS Offices 24 hours prior to test.
+</div>
+
+<div class="notice">IF THIS TEST IS NOT TAKEN AS SCHEDULED, IT WILL BE RETURNED TO THE INSTRUCTOR AFTER 24 HOURS</div>
+
+<div class="form-row">
+<label for="pages">Verify Number of Pages in Test:</label>
+<input type="text" id="pages" name="pages" value="N/A" readonly style="background-color: #f0f0f0; width: 60px;">
+<label for="contact" style="margin-left: 20px;">Instructor Contact:</label>
+<input type="text" id="contact" name="contact">
+</div>
+
+<div>
+<div><strong>Special testing instructions:</strong> Please indicate what student can have in the testing room: such as open book/notes, use a calculator, dictionary, etc. <span class="highlight">If nothing is indicated student will not be allowed to use anything on test.</span></div>
+<textarea class="instruction-box" style="width: 100%; resize: vertical;"></textarea>
+</div>
+
+<div class="time-row">
+<label for="hours">What amount of time will the class be given for this test?</label>
+<input type="text" id="hours" name="hours" class="time-input"> hour(s)
+<input type="text" id="minutes" name="minutes" class="time-input"> minutes
+</div>
+
+<div><strong>WHEN TEST IS COMPLETED, HOW WILL TEST BE RETURNED?</strong></div>
+
+<div class="return-options">
+<div class="return-option">
+<input type="checkbox" id="deliver" name="delivery">
+<label for="deliver">
+DELIVER to: (room #) <input type="text" name="room"> at: (campus) <input type="text" name="deliver-campus"> (division)<input type="text" name="division">
+</label>
+</div>
+
+<div class="return-option">
+<input type="checkbox" id="pickup" name="pickup">
+<label for="pickup">INSTRUCTOR WILL PICKUP TEST</label>
+</div>
+
+<div class="return-option">
+<input type="checkbox" id="other-pickup" name="other-pickup">
+<label for="other-pickup">
+SOMEONE OTHER THAN THE INSTRUCTOR WILL PICK UP TEST (MUST PRESENT PICTURE ID) NAME: <input type="text" name="other-name">
+</label>
+</div>
+
+<div class="return-option">
+<input type="checkbox" id="electronic" name="electronic" checked>
+<label for="electronic">THE EXAM IS TO BE TAKEN ON THE COMPUTER AND ELECTRONICALLY SUBMITTED.</label>
+</div>
+
+<div class="return-option">
+<input type="checkbox" id="scan" name="scan">
+<label for="scan">SCAN AND EMAIL COMPLETED TEST (to NMSU or DACC email address only)</label>
+</div>
+</div>
+
+<div class="signature-row">
+<div>
+<div class="signature-box" id="signature-pad"></div>
+<div class="signature-field">INSTRUCTOR SIGNATURE</div>
+</div>
+<div>
+<div class="signature-field">
+<input type="text" id="date" name="date" placeholder="MM/DD/YYYY" style="width: 150px; border: none; border-bottom: 1px solid #ccc; text-align: center;">
+<div>DATE</div>
+</div>
+</div>
+</div>
+
+<div class="form-row" style="margin-top: 15px;">
+<button type="button" id="clear-signature" style="margin-right: 10px;">Clear Signature</button>
+<button type="button" id="email-form">Email Completed Form</button>
+</div>
+
+<div class="revision">Rev. 5/1/13</div>
+
+<script>
+// Set current date as default
+document.addEventListener('DOMContentLoaded', function() {
+  const today = new Date();
+  const formattedDate = (today.getMonth() + 1).toString().padStart(2, '0') + '/' +
+    today.getDate().toString().padStart(2, '0') + '/' +
+    today.getFullYear();
+  document.getElementById('date').value = formattedDate;
+
+  // Make checkboxes mutually exclusive for return options
+  const returnOptions = document.querySelectorAll('.return-option input[type="checkbox"]');
+  returnOptions.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      if (this.checked) {
+        returnOptions.forEach(cb => {
+          if (cb !== this) cb.checked = false;
+        });
+      }
+    });
+  });
+  
+  // Setup signature pad
+  const canvas = document.createElement('canvas');
+  canvas.width = 300;
+  canvas.height = 60;
+  const signaturePad = document.getElementById('signature-pad');
+  signaturePad.appendChild(canvas);
+  
+  const ctx = canvas.getContext('2d');
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+  
+  canvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    const rect = canvas.getBoundingClientRect();
+    lastX = e.clientX - rect.left;
+    lastY = e.clientY - rect.top;
+  });
+  
+  canvas.addEventListener('mousemove', (e) => {
+    if (!isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    
+    lastX = x;
+    lastY = y;
+  });
+  
+  canvas.addEventListener('mouseup', () => {
+    isDrawing = false;
+  });
+  
+  canvas.addEventListener('mouseleave', () => {
+    isDrawing = false;
+  });
+  
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    lastX = touch.clientX - rect.left;
+    lastY = touch.clientY - rect.top;
+    isDrawing = true;
+    e.preventDefault();
+  });
+  
+  canvas.addEventListener('touchmove', (e) => {
+    if (!isDrawing) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    
+    lastX = x;
+    lastY = y;
+    e.preventDefault();
+  });
+  
+  canvas.addEventListener('touchend', (e) => {
+    isDrawing = false;
+    e.preventDefault();
+  });
+  
+  // Clear signature button
+  document.getElementById('clear-signature').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+  
+// Email form button with Outlook-specific option
+document.getElementById('email-form').addEventListener('click', () => {
+  // Collect form data
+  const formData = {
+    studentName: document.getElementById('student-name').value || '[Not Provided]',
+    course: document.getElementById('course').value || '[Not Provided]',
+    instructor: document.getElementById('instructor').value || '[Not Provided]',
+    campus: document.getElementById('campus').value || '[Not Provided]',
+    testDate: document.getElementById('test-date').value || '[Not Provided]',
+    testTime: document.getElementById('test-time').value || '[Not Provided]',
+    instructorContact: document.getElementById('contact').value || '[Not Provided]',
+    testHours: document.getElementById('hours').value || '0',
+    testMinutes: document.getElementById('minutes').value || '0',
+    specialInstructions: document.querySelector('.instruction-box').value || '[None Provided]'
+  };
+  
+  // Prepare email body
+  const subject = `Alternative Testing Form - ${formData.studentName} - ${formData.course}`;
+  let body = `Alternative Testing Form Details:\n\n`;
+  body += `Student: ${formData.studentName}\n`;
+  body += `Course: ${formData.course}\n`;
+  body += `Instructor: ${formData.instructor}\n`;
+  body += `Campus: ${formData.campus}\n`;
+  body += `Test Date: ${formData.testDate}\n`;
+  body += `Test Time: ${formData.testTime}\n`;
+  body += `Test Duration: ${formData.testHours} hour(s) ${formData.testMinutes} minute(s)\n`;
+  body += `Special Instructions: ${formData.specialInstructions}\n\n`;
+  body += `Instructor Contact: ${formData.instructorContact}`;
+  
+  // Try to open Outlook
+  try {
+    // Outlook-specific mailto protocol
+    const outlookLink = `ms-outlook:compose?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Try to open outlook with specific protocol
+    window.location.href = outlookLink;
+    
+    // Set a fallback in case the protocol doesn't work
+    setTimeout(() => {
+      // Check if user wants to try standard mailto
+      const useStandardMailto = confirm("We tried to open Microsoft Outlook but it may not have launched. Would you like to try opening your default email client instead?");
+      
+      if (useStandardMailto) {
+        const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(mailtoLink, '_blank');
+      } else {
+        // Show on-page preview as another fallback
+        showEmailPreview(formData, subject, body);
+      }
+    }, 1500); // Wait 1.5 seconds to see if Outlook opens
+    
+  } catch (e) {
+    console.error("Error trying to open Outlook:", e);
+    
+    // Fallback to standard mailto
+    const useStandardMailto = confirm("There was an error launching Microsoft Outlook. Would you like to try opening your default email client instead?");
+    
+    if (useStandardMailto) {
+      const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(mailtoLink, '_blank');
+    } else {
+      // Show on-page preview as another fallback
+      showEmailPreview(formData, subject, body);
+    }
+  }
+});
+
+// Helper function to show email preview on page
+function showEmailPreview(formData, subject, body) {
+  // Check if email preview already exists and remove it
+  const existingPreview = document.getElementById('email-preview-container');
+  if (existingPreview) {
+    existingPreview.remove();
+  }
+  
+  // Create email preview container
+  const previewContainer = document.createElement('div');
+  previewContainer.id = 'email-preview-container';
+  previewContainer.style.marginTop = '20px';
+  previewContainer.style.padding = '15px';
+  previewContainer.style.border = '1px solid #ccc';
+  previewContainer.style.borderRadius = '5px';
+  previewContainer.style.backgroundColor = '#f9f9f9';
+  
+  // Format the body text with HTML
+  const formattedBody = body.replace(/\n/g, '<br>');
+  
+  // Add content to the preview
+  previewContainer.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <h3 style="margin: 0;">Email Preview</h3>
+      <button id="close-preview" style="border: none; background: none; cursor: pointer; font-size: 16px;">✕</button>
+    </div>
+    <div style="margin-bottom: 15px;">
+      <strong>Subject:</strong> ${subject}
+    </div>
+    <div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+      ${formattedBody}
+    </div>
+    <div style="margin-top: 15px;">
+      <p style="font-size: 0.85em; color: #666;">Unable to open Microsoft Outlook. You can copy this text to use in your email.</p>
+      <button id="copy-email-text" style="padding: 5px 10px; margin-top: 5px;">Copy Email Text</button>
+    </div>
+  `;
+  
+  // Insert the preview after the signature section
+  document.querySelector('.signature-row').insertAdjacentElement('afterend', previewContainer);
+  
+  // Add close functionality
+  document.getElementById('close-preview').addEventListener('click', () => {
+    previewContainer.remove();
+  });
+  
+  // Add copy functionality
+  document.getElementById('copy-email-text').addEventListener('click', () => {
+    navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`).then(() => {
+      alert('Email text copied to clipboard.');
+    }).catch(err => {
+      console.error('Error copying text: ', err);
+      alert('Unable to copy to clipboard. You may need to manually select and copy the text.');
+    });
+  });
+  
+  // Scroll to the preview
+  previewContainer.scrollIntoView({ behavior: 'smooth' });
+}
+});
+</script>
+</body>
+</html>
