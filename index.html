@@ -6,17 +6,19 @@
     <title>Protected Page</title>
     <script>
         // Password protection
-        var correctPassword = "dacc123"; // Set your password
+        var correctPassword = "yourpassword"; // Set your password
         var userPassword = prompt("Enter password:");
 
         if (userPassword === null || userPassword !== correctPassword) {
-            document.body.innerHTML = ""; // Clear page content
             document.write("<h1>Access Denied</h1>");
             document.write("<p>Reload the page to try again.</p>");
-            document.close(); // Prevent further loading
-            throw new Error("Access denied"); // Stops script execution
+            document.body.style.display = "none"; // Hide all content
+            setTimeout(() => location.reload(), 2000); // Optional: Reload page after 2 seconds
+            throw new Error("Access denied"); // Stop script execution
         }
     </script>
+</head>
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nursing Program - Welcome</title>
