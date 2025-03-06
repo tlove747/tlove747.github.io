@@ -24,6 +24,8 @@
     }
     #contentArea {
         display: none;
+        width: 100%;
+        height: 100%;
     }
     input[type="password"] {
         padding: 10px;
@@ -207,14 +209,13 @@
   
   <script>
     // Set your password here
-    const correctPassword = "dacc123";
+    const correctPassword = "yourpassword123";
 
     // Check if the user has already entered the correct password in this session
     window.onload = function() {
-        const authenticated = sessionStorage.getItem('authenticated');
-        if (authenticated === 'true') {
-            showContent();
-        }
+        // For this implementation, we'll always require the password
+        // Remove the previous authentication
+        sessionStorage.removeItem('authenticated');
     };
 
     function checkPassword() {
