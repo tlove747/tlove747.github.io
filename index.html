@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Protected Page</title>
     <script>
-        // Simple password protection (Not secure for sensitive content)
-        var password = prompt("Enter password:");
-        if (password !== "yourpassword") {
-            document.body.innerHTML = "<h1>Access Denied</h1>";
+        // Password protection
+        var correctPassword = "dacc123"; // Change this to your desired password
+        var userPassword = prompt("Enter password:");
+
+        if (userPassword === null || userPassword !== correctPassword) {
+            document.write("<h1>Access Denied</h1>");
+            document.write("<p>Reload the page to try again.</p>");
+            throw new Error("Access denied"); // Prevents further script execution
         }
     </script>
   <meta charset="UTF-8" />
