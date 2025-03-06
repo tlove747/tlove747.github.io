@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Improvement Plan</title>
+  <style>
+    /* Base styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
+      color: #333;
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.25in;
+      background-color: #f5f5f5;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #003366;
+      font-size: 22px;
+    }
+    
+    /* Main form container */
+    .form-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* College header */
+    .college-header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    
+    .college-name {
+      color: #8c1d40;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    /* Section styles */
+    .section {
+      margin-bottom: 15px;
+    }
+    
+    .section-header {
+      background-color: #003366;
+      color: white;
+      padding: 5px 10px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    /* Student info table */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+    }
+    
+    .info-item label {
+      font-weight: bold;
+      margin-right: 10px;
+      min-width: 120px;
+    }
+    
+    .info-item input {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+    }
+    
+    /* Checkbox items */
+    .checkbox-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .checkbox-column {
+      padding: 0 5px;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+      margin-right: 8px;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border: 1px solid #333;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      top: 2px;
+    }
+    
+    .checkbox-item input[type="checkbox"]:checked {
+      background-color: #003366;
+      border-color: #003366;
+    }
+    
+    .checkbox-item input[type="checkbox"]:checked::after {
+      content: "✓";
+      position: absolute;
+      color: white;
+      font-size: 11px;
+      top: -1px;
+      left: 2px;
+    }
+    
+    .checkbox-item label {
+      flex: 1;
+      min-width: 200px;
+      font-size: 13px;
+    }
+    
+    .checkbox-item input[type="text"] {
+      width: 80px;
+      padding: 3px 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      font-size: 13px;
+    }
+    
+    .subsection-title {
+      font-weight: bold;
+      margin: 10px 0 5px 0;
+      font-size: 13px;
+    }
+    
+    /* Text areas */
+    textarea {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      min-height: 60px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      resize: vertical;
+    }
+    
+    .other-field {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    
+    /* Three-column layout */
+    .three-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .column {
+      padding: 5px;
+    }
+    
+    /* Consequences box */
+    .consequences {
+      border: 1px solid #ccc;
+      border-left: 4px solid #8c1d40;
+      padding: 10px;
+      background-color: #fff8f8;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+    
+    /* Signature section */
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 150px 1fr 80px 120px;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .signature-label {
+      font-weight: bold;
+      color: #003366;
+      align-self: center;
+    }
+    
+    .signature-box {
+      height: 50px;
+      border: 1px solid #ccc;
+      background-color: #fcfcfc;
+    }
+    
+    .signature-date {
+      padding: 5px;
+      border: 1px solid #ccc;
+      text-align: center;
+      align-self: center;
+    }
+    
+    .clear-button {
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      align-self: center;
+    }
+    
+    /* Action buttons */
+    .buttons {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    
+    .btn {
+      padding: 8px 15px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .btn:hover {
+      background-color: #004b8c;
+    }
+    
+    /* Compact helper classes */
+    .mt-5 {
+      margin-top: 5px;
+    }
+    
+    .mb-5 {
+      margin-bottom: 5px;
+    }
+    
+    .mb-10 {
+      margin-bottom: 10px;
+    }
+    
+    .small-text {
+      font-size: 12px;
+    }
+    
+    /* Print-specific styles */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+        font-size: 10pt;
+      }
+      
+      .form-container {
+        padding: 0;
+        box-shadow: none;
+      }
+      
+      .section-header {
+        background-color: white !important;
+        color: black !important;
+        border: 1px solid #333;
+        break-after: avoid;
+        page-break-after: avoid;
+      }
+      
+      .buttons, .clear-button {
+        display: none;
+      }
+      
+      h1, .college-name, .section-header {
+        break-after: avoid;
+        page-break-after: avoid;
+      }
+      
+      .info-grid, .checkbox-item, .consequences {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      
+      .signature-grid {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      
+      input[type="text"], textarea, .signature-date, .other-field {
+        border: 1px solid #333 !important;
+        background-color: #f9f9f9 !important;
+      }
+      
+      .signature-box {
+        border: 1px solid #333 !important;
+      }
+      
+      /* Custom checkbox appearance for print */
+      .checkbox-item input[type="checkbox"] {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      .checkbox-item input[type="checkbox"]:checked {
+        background-color: #003366 !important;
+        border-color: #003366 !important;
+      }
+      
+      /* Use natural page breaks */
+      .section {
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <!-- College Header -->
+    <div class="college-header">
+      <div class="college-name">DOÑA ANA COMMUNITY COLLEGE</div>
+      <h1>Academic Improvement Plan</h1>
+    </div>
+    
+    <!-- Student Information -->
+    <div class="section">
+      <div class="section-header">Student Information</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Name:</label>
+          <input type="text" id="student-name">
+        </div>
+        <div class="info-item">
+          <label>Email:</label>
+          <input type="text" id="student-email">
+        </div>
+        <div class="info-item">
+          <label>Semester/Year:</label>
+          <input type="text" id="semester-year">
+        </div>
+        <div class="info-item">
+          <label>Course:</label>
+          <input type="text" id="course">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Faculty Note -->
+    <div class="section">
+      <div class="section-header">Faculty Note</div>
+      
+      <div class="checkbox-area">
+        <div class="checkbox-column">
+          <div class="subsection-title">Reason for plan:</div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="exam-grade">
+            <label for="exam-grade">Exam # </label>
+            <input type="text" style="width: 40px;"> grade below 80%
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="clinical-paperwork">
+            <label for="clinical-paperwork">Week # (date)</label>
+            <input type="text" style="width: 80px;"> Clinical Paperwork below 77%
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="hesi-score">
+            <label for="hesi-score">HESI Score below 900 OR below national mean</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="skills-performance">
+            <label for="skills-performance">Skills performance or clinical performance unsatisfactory (U)</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="reason-other">
+            <label for="reason-other">Other:</label>
+          </div>
+          <input type="text" class="other-field" style="width: 95%;">
+          
+          <div class="subsection-title">Objectives for Improvement:</div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="obj-exam-grade">
+            <label for="obj-exam-grade">Exam # </label>
+            <input type="text" style="width: 40px;"> grade above 80%
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="obj-clinical-paperwork">
+            <label for="obj-clinical-paperwork">Week # (date)</label>
+            <input type="text" style="width: 80px;"> Clinical Paperwork above 77%
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="obj-hesi-score">
+            <label for="obj-hesi-score">2<sup>nd</sup> attempt HESI Score above 900 OR above national mean</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="obj-skills-performance">
+            <label for="obj-skills-performance">Skills performance or clinical performance Satisfactory (S)</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="obj-other">
+            <label for="obj-other">Other:</label>
+          </div>
+          <input type="text" class="other-field" style="width: 95%;">
+        </div>
+        
+        <div class="checkbox-column">
+          <div class="subsection-title">Narrative (optional)</div>
+          <textarea id="faculty-narrative" style="height: 100px;"></textarea>
+          
+          <div class="subsection-title mt-5">Faculty Actions:</div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="referral-quick-connect">
+            <label for="referral-quick-connect">Referral to Quick Connect early warning system</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="referral-disabilities">
+            <label for="referral-disabilities">Referral to student with disabilities office</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="referral-academic">
+            <label for="referral-academic">Referral to Academic Resources Center</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="referral-faculty">
+            <label for="referral-faculty">Referral to nursing faculty mentor</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="faculty-other">
+            <label for="faculty-other">Other:</label>
+          </div>
+          <input type="text" class="other-field" style="width: 95%;">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Student Narrative -->
+    <div class="section">
+      <div class="section-header">Student Narrative</div>
+      <p class="small-text mb-5">(Please include information that you feel you need for support and success related to this plan)</p>
+      <textarea id="student-narrative" style="height: 80px;"></textarea>
+    </div>
+    
+    <!-- Recommended Student Actions -->
+    <div class="section">
+      <div class="section-header">Recommended Student Actions & Date for Completion</div>
+      
+      <div class="three-column">
+        <div class="column">
+          <div class="checkbox-item">
+            <input type="checkbox" id="meet-instructor">
+            <label for="meet-instructor">Meet with instructor for exam review</label>
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="attend-tutoring">
+            <label for="attend-tutoring">Attend tutoring with nursing Student Success Coordinator for</label>
+          </div>
+          <textarea id="tutoring-text" style="height: 40px; width: 95%;"></textarea>
+          
+          <div class="small-text mb-5">
+            Student Success Coordinator Initials once tutoring complete: <input type="text" style="width: 40px; border: 1px solid #ccc;">
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="provide-evidence">
+            <label for="provide-evidence">Provide evidence of completing </label>
+            <input type="text" style="width: 40px;"> # of NCLEX Style questions
+          </div>
+        </div>
+        
+        <div class="column">
+          <div class="checkbox-item">
+            <input type="checkbox" id="meet-lab-coordinator">
+            <label for="meet-lab-coordinator">Meet with nursing Lab Coordinator for practice and skills performance</label>
+          </div>
+          <textarea id="lab-skills-text" style="height: 40px; width: 95%;"></textarea>
+          
+          <div class="small-text mb-5">
+            Lab Coordinator Initials once tutoring complete: <input type="text" style="width: 40px; border: 1px solid #ccc;">
+          </div>
+          
+          <div class="checkbox-item">
+            <input type="checkbox" id="actions-other">
+            <label for="actions-other">Other:</label>
+          </div>
+          <textarea id="actions-other-text" style="height: 40px; width: 95%;"></textarea>
+        </div>
+        
+        <div class="column">
+          <div class="subsection-title">Date for Completion:</div>
+          <input type="date" style="width: 100%; margin-bottom: 10px; padding: 5px; border: 1px solid #ccc;">
+          
+          <div class="subsection-title">Date for follow up with instructor:</div>
+          <input type="date" style="width: 100%; margin-bottom: 10px; padding: 5px; border: 1px solid #ccc;">
+          
+          <div class="subsection-title">Follow up note:</div>
+          <textarea style="height: 90px;"></textarea>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Consequences -->
+    <div class="section">
+      <div class="section-header">Consequences of not meeting objectives/actions:</div>
+      <div class="consequences">
+        Student was advised that the Academic Development Plan is a contract and valid until the end of the course. Failure to meet the terms of the contract and meet the objectives for improvement will result in one or more of the following: not meeting the ADN competencies for clinical resulting in possible dismissal from the clinical rotation, failure of the course, dismissal from the program
+      </div>
+    </div>
+    
+    <!-- Signatures -->
+    <div class="section">
+      <div class="signature-grid">
+        <div class="signature-label">Faculty Signature:</div>
+        <div class="signature-box" id="faculty-signature"></div>
+        <button type="button" class="clear-button" id="clear-faculty-signature">Clear</button>
+        <input type="text" class="signature-date" id="faculty-date" placeholder="Date">
+      </div>
+      
+      <div class="signature-grid">
+        <div class="signature-label">Student Signature:</div>
+        <div class="signature-box" id="student-signature"></div>
+        <button type="button" class="clear-button" id="clear-student-signature">Clear</button>
+        <input type="text" class="signature-date" id="student-date" placeholder="Date">
+      </div>
+      
+      <div class="signature-grid">
+        <div class="signature-label">Follow-up meeting:</div>
+        <div class="signature-box" id="followup-signature"></div>
+        <button type="button" class="clear-button" id="clear-followup-signature">Clear</button>
+        <input type="text" class="signature-date" id="followup-date" placeholder="Date">
+      </div>
+    </div>
+    
+    <!-- Buttons -->
+    <div class="buttons">
+      <button type="button" id="print-button" class="btn">Print Form</button>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize signature pads
+      initializeSignaturePad('faculty-signature', 'clear-faculty-signature');
+      initializeSignaturePad('student-signature', 'clear-student-signature');
+      initializeSignaturePad('followup-signature', 'clear-followup-signature');
+      
+      // Set current date for signatures
+      const today = new Date();
+      const formattedDate = (today.getMonth() + 1).toString().padStart(2, '0') + '/' +
+        today.getDate().toString().padStart(2, '0') + '/' +
+        today.getFullYear();
+      
+      document.getElementById('faculty-date').value = formattedDate;
+      document.getElementById('student-date').value = formattedDate;
+      
+      // Print button functionality
+      document.getElementById('print-button').addEventListener('click', function() {
+        // Get student name for logging
+        let studentName = document.getElementById('student-name').value.trim();
+        if (studentName) {
+          console.log(`Printing form for: ${studentName}`);
+        }
+        
+        // Make sure checkboxes display correctly when printing
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+          if (checkbox.checked) {
+            checkbox.setAttribute('data-checked', 'true');
+            checkbox.style.backgroundColor = '#003366';
+            checkbox.style.borderColor = '#003366';
+          }
+        });
+        
+        // Print the form
+        setTimeout(function() {
+          window.print();
+        }, 100);
+      });
+    });
+    
+    // Signature pad implementation
+    function initializeSignaturePad(containerId, clearButtonId) {
+      const container = document.getElementById(containerId);
+      
+      // Clear any existing content
+      container.innerHTML = '';
+      
+      // Add a canvas element
+      const canvas = document.createElement('canvas');
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      container.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+      
+      // Variables to track drawing state
+      let drawing = false;
+      let lastX, lastY;
+      let hasSignature = false;
+      
+      // Add placeholder text
+      ctx.fillStyle = '#f8f8f8';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#aaa';
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Sign here', canvas.width/2, canvas.height/2);
+      
+      // Mouse events
+      canvas.addEventListener('mousedown', function(e) {
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+        
+        // Only clear the canvas on the first drawing action
+        if (!hasSignature) {
+          ctx.fillStyle = '#f8f8f8';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          hasSignature = true;
+        }
+      });
+      
+      canvas.addEventListener('mousemove', function(e) {
+        if (!drawing) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#000';
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        
+        lastX = x;
+        lastY = y;
+      });
+      
+      canvas.addEventListener('mouseup', function() {
+        drawing = false;
+      });
+      
+      canvas.addEventListener('mouseleave', function() {
+        drawing = false;
+      });
+      
+      // Touch events for mobile
+      canvas.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        lastX = touch.clientX - rect.left;
+        lastY = touch.clientY - rect.top;
+        
+        // Only clear the canvas on the first drawing action
+        if (!hasSignature) {
+          ctx.fillStyle = '#f8f8f8';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          hasSignature = true;
+        }
+      }, { passive: false });
+      
+      canvas.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        if (!drawing) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#000';
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        
+        lastX = x;
+        lastY = y;
+      }, { passive: false });
+      
+      canvas.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        drawing = false;
+      }, { passive: false });
+      
+      // Clear button
+      document.getElementById(clearButtonId).addEventListener('click', function() {
+        ctx.fillStyle = '#f8f8f8';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Re-add placeholder text
+        ctx.fillStyle = '#aaa';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Sign here', canvas.width/2, canvas.height/2);
+        
+        // Reset signature state
+        hasSignature = false;
+      });
+    }
+  </script>
+</body>
+</html>
