@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopping RN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background-color: #e9f5f9;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            border-bottom: 5px solid #4361ee;
+        }
+        
+        #nurse {
+            position: absolute;
+            width: 50px;
+            height: 80px;
+            bottom: 0;
+            left: 100px;
+            background-color: #4cc9f0;
+            border-radius: 5px;
+            z-index: 10;
+            transition: transform 0.1s, height 0.07s;
+        }
+        
+        .nurse-head {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            top: -15px;
+            left: 10px;
+            background-color: #ffcad4;
+            border-radius: 50%;
+        }
+        
+        .nurse-cap {
+            position: absolute;
+            width: 20px;
+            height: 10px;
+            top: -20px;
+            left: 15px;
+            background-color: #ffffff;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .obstacle {
+            position: absolute;
+            bottom: 0;
+            background-color: #f72585;
+            border-radius: 5px;
+        }
+        
+        .bedpan {
+            width: 40px;
+            height: 20px;
+            background-color: #7678ed;
+        }
+        
+        .patient {
+            width: 40px;
+            height: 60px;
+            background-color: #3a0ca3;
+        }
+        
+        #floor {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            bottom: 0;
+            background-color: #4cc9f0;
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4361ee;
+        }
+        
+        #level-display {
+            position: absolute;
+            top: 40px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #7209b7;
+        }
+        
+        #lives-display {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #f72585;
+        }
+        
+        #alert-container {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 500px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 4px solid #7209b7;
+            border-radius: 10px;
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        #feedback-message {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4cc9f0;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        #patient-monitor {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #121212;
+            color: #4cc9f0;
+            font-family: 'Courier New', monospace;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .vital-sign {
+            margin: 8px 0;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 5px rgba(76, 201, 240, 0.3);
+        }
+        
+        .vital-sign span {
+            display: inline-block;
+            width: 80px;
+            color: #7ee8fa;
+        }
+        
+        #treatment-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        
+        .treatment-btn {
+            padding: 10px 15px;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        
+        .treatment-btn:hover {
+            background-color: #3a0ca3;
+            transform: translateY(-2px);
+        }
+        
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 400px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 4px solid #ff006e;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+        }
+        
+        #restart-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3a86ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        #restart-btn:hover {
+            background-color: #1a66ff;
+        }
+        
+        #timer-bar {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 10px;
+            background-color: #ff006e;
+            width: 100%;
+        }
+        
+        @keyframes countdown {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+        
+        .countdown {
+            animation: countdown linear forwards;
+        }
+        
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+        }
+        
+        #start-btn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background-color: #3a86ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        
+        #start-btn:hover {
+            background-color: #1a66ff;
+        }
+        
+        h1 {
+            color: #3a86ff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="nurse">
+            <div class="nurse-cap"></div>
+            <div class="nurse-head"></div>
+        </div>
+        <div id="floor"></div>
+        <div id="score-display">Score: 0</div>
+        <div id="level-display">Level: 1</div>
+        <div id="lives-display">Lives: 3</div>
+        
+        <div id="alert-container">
+            <div id="patient-monitor">
+                <div class="vital-sign" id="temperature">Temperature: 98.6°F</div>
+                <div class="vital-sign" id="blood-pressure">BP: 120/80 mmHg</div>
+                <div class="vital-sign" id="heart-rate">HR: 75 bpm</div>
+                <div class="vital-sign" id="oxygen">O2 Sat: 98%</div>
+            </div>
+            <div id="treatment-options">
+                <!-- Treatment buttons will be added dynamically -->
+            </div>
+            <div id="timer-bar"></div>
+            <div id="feedback-message">Correct!</div>
+        </div>
+        
+        <div id="game-over">
+            <h2>Game Over!</h2>
+            <p id="final-score">Your score: 0</p>
+            <button id="restart-btn">Play Again</button>
+        </div>
+        
+        <div id="start-screen">
+            <h1>Hopping RN</h1>
+            <p class="instructions">
+                Run through the hospital and jump over obstacles by pressing SPACE or tapping the screen.
+                Respond to patient alerts by selecting the correct treatment based on vital signs.
+                You have 3 lives to survive collisions with obstacles. 
+                Earn points for correct treatments and surviving longer! Your level increases with each correct treatment.
+            </p>
+            <button id="start-btn">Start Game</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game elements
+            const gameContainer = document.getElementById('game-container');
+            const nurse = document.getElementById('nurse');
+            const scoreDisplay = document.getElementById('score-display');
+            const alertContainer = document.getElementById('alert-container');
+            const patientMonitor = document.getElementById('patient-monitor');
+            const treatmentOptions = document.getElementById('treatment-options');
+            const gameOverScreen = document.getElementById('game-over');
+            const finalScore = document.getElementById('final-score');
+            const restartBtn = document.getElementById('restart-btn');
+            const startScreen = document.getElementById('start-screen');
+            const startBtn = document.getElementById('start-btn');
+            const timerBar = document.getElementById('timer-bar');
+            
+            // Game variables
+            let isJumping = false;
+            let score = 0;
+            let gameSpeed = 4;
+            let gameActive = false;
+            let obstacleInterval;
+            let scoreInterval;
+            let currentVitals = {};
+            let alertTimeoutId = null;
+            let alertActive = false;
+            let successfulJumps = 0;
+            let successfulTreatments = 0;
+            let obstacleFrequency = 2000; // Initial obstacle frequency in ms
+            let responseTime = 15000; // Initial response time in ms
+            let level = 1; // Current level
+            let lives = 3; // Lives counter
+            
+            // Constants
+            const nurseBottom = 0;
+            const initialGameSpeed = 7; // Increased from 6 to 7
+            const maxGameSpeed = 20; // Increased from 15 to 20 for higher ceiling
+            const initialResponseTime = 12000; // Reduced from 15000 to 12000 ms
+            const minResponseTime = 3000; // Reduced from 4000 to 3000 ms
+            
+            // Treatment options database
+            const treatments = [
+                { name: "Tylenol", conditions: ["fever"] },
+                { name: "Give O2", conditions: ["low oxygen"] },
+                { name: "IV Fluids", conditions: ["dehydration", "low blood pressure"] },
+                { name: "Hydralazine", conditions: ["high blood pressure"] },
+                { name: "Atropine", conditions: ["low heart rate"] },
+                { name: "Metoprolol", conditions: ["high heart rate", "high blood pressure"] },
+                { name: "Epinephrine", conditions: ["cardiac arrest"] },
+                { name: "Albuterol", conditions: ["respiratory distress"] },
+                { name: "No Treatment Needed", conditions: ["normal"] }
+            ];
+            
+            // Initialize game
+            function initGame() {
+                score = 0;
+                gameSpeed = initialGameSpeed;
+                gameActive = true;
+                successfulJumps = 0;
+                successfulTreatments = 0;
+                obstacleFrequency = 1500; // Reduced from 1800ms to 1500ms
+                responseTime = initialResponseTime; // Reset response time
+                level = 1; // Reset level
+                lives = 3; // Reset lives
+                document.querySelectorAll('.obstacle').forEach(obs => obs.remove());
+                scoreDisplay.textContent = `Score: ${score}`;
+                document.getElementById('level-display').textContent = `Level: ${level}`;
+                document.getElementById('lives-display').textContent = `Lives: ${lives}`;
+                startObstacleGeneration();
+                startScoreIncrement();
+            }
+            
+            // Start game when button is clicked
+            startBtn.addEventListener('click', function() {
+                startScreen.style.display = 'none';
+                initGame();
+            });
+            
+            // Restart game
+            restartBtn.addEventListener('click', function() {
+                gameOverScreen.style.display = 'none';
+                initGame();
+            });
+            
+            // Improved jump function with physics-based motion
+            function jump() {
+                if (isJumping || !gameActive) return;
+                
+                let position = 0;
+                let velocity = 12; // Initial velocity upward
+                const gravity = 0.6; // Acceleration due to gravity
+                isJumping = true;
+                
+                // Add a "squat" animation before jumping for more dynamic feel
+                nurse.style.height = '70px';
+                nurse.style.bottom = '-5px';
+                
+                // Small delay before actual jump for anticipation
+                setTimeout(() => {
+                    // Return to normal height and start jump
+                    nurse.style.height = '80px';
+                    
+                    let jumpInterval = setInterval(function() {
+                        // Apply physics
+                        position += velocity;
+                        velocity -= gravity;
+                        
+                        // Apply position
+                        nurse.style.bottom = position + 'px';
+                        
+                        // Add a slight rotation effect for visual appeal
+                        const rotation = Math.min(20, Math.max(-10, velocity * 1.5));
+                        nurse.style.transform = `rotate(${rotation}deg)`;
+                        
+                        // Check if we've landed
+                        if (position <= nurseBottom && velocity < 0) {
+                            clearInterval(jumpInterval);
+                            isJumping = false;
+                            position = nurseBottom;
+                            nurse.style.bottom = position + 'px';
+                            
+                            // Small landing squat
+                            nurse.style.height = '75px';
+                            setTimeout(() => {
+                                nurse.style.height = '80px';
+                                nurse.style.transform = 'rotate(0deg)'; // Reset rotation
+                            }, 100);
+                        }
+                    }, 16); // 60fps for smoother animation
+                }, 70); // Short delay for anticipation
+            }
+            
+            // Jump controls
+            document.addEventListener('keydown', function(event) {
+                if (event.code === 'Space') {
+                    jump();
+                }
+            });
+            
+            gameContainer.addEventListener('touchstart', function(event) {
+                if (gameActive && !alertActive) {
+                    jump();
+                    event.preventDefault();
+                }
+            });
+            
+            // Generate obstacles
+            function startObstacleGeneration() {
+                // Clear any existing interval
+                if (obstacleInterval) {
+                    clearInterval(obstacleInterval);
+                }
+                
+                // Set up next obstacle creation
+                obstacleInterval = setInterval(function() {
+                    if (!gameActive || alertActive) return;
+                    
+                    // Create single obstacle - no more staggered obstacles
+                    createObstacle();
+                }, obstacleFrequency);
+            }
+            
+            // Function to create a single obstacle
+            function createObstacle() {
+                const obstacle = document.createElement('div');
+                obstacle.classList.add('obstacle');
+                
+                // Randomly choose obstacle type
+                if (Math.random() > 0.5) {
+                    obstacle.classList.add('bedpan');
+                } else {
+                    obstacle.classList.add('patient');
+                }
+                
+                gameContainer.appendChild(obstacle);
+                
+                // Set initial position
+                let obstacleLeft = gameContainer.offsetWidth;
+                obstacle.style.left = obstacleLeft + 'px';
+                
+                // Move obstacle
+                let moveInterval = setInterval(function() {
+                    if (!gameActive || alertActive) {
+                        clearInterval(moveInterval);
+                        return;
+                    }
+                    
+                    obstacleLeft -= gameSpeed;
+                    obstacle.style.left = obstacleLeft + 'px';
+                    
+                    // Check for collision
+                    if (isColliding(nurse, obstacle)) {
+                        // Reduce lives instead of ending game immediately
+                        lives--;
+                        document.getElementById('lives-display').textContent = `Lives: ${lives}`;
+                        
+                        // Visual feedback for collision
+                        nurse.style.backgroundColor = '#f72585'; // Turn nurse pink on hit
+                        setTimeout(() => {
+                            nurse.style.backgroundColor = '#4cc9f0'; // Return to normal color
+                        }, 300);
+                        
+                        // Remove the obstacle
+                        clearInterval(moveInterval);
+                        obstacle.remove();
+                        
+                        // End game if no lives left
+                        if (lives <= 0) {
+                            endGame('obstacle');
+                        }
+                        return;
+                    }
+                    
+                    // Remove obstacle when it's off-screen
+                    if (obstacleLeft < -50) {
+                        clearInterval(moveInterval);
+                        obstacle.remove();
+                        
+                        // Increment successful jump counter when obstacle is cleared
+                        successfulJumps++;
+                        
+                        // Check if it's time to generate an alert (after every 3 successful jumps)
+                        if (successfulJumps >= 3 && !alertActive) {
+                            successfulJumps = 0; // Reset counter
+                            generateAlert();
+                        }
+                    }
+                }, 20);
+            }
+            
+            // We're no longer using this function as alerts are generated after 3 successful jumps
+            // Keeping it for reference but not calling it
+            function startAlertGeneration() {
+                // This functionality has been moved to the obstacle clearing logic
+            }
+            
+            // Increment score over time
+            function startScoreIncrement() {
+                scoreInterval = setInterval(function() {
+                    if (gameActive && !alertActive) {
+                        score += 1;
+                        scoreDisplay.textContent = `Score: ${score}`;
+                        
+                        // Increase game speed more aggressively
+                        if (gameSpeed < maxGameSpeed) {
+                            gameSpeed = initialGameSpeed + (score / 25); // Increased from score/40 to score/25
+                        }
+                    }
+                }, 1000);
+            }
+            
+            // Generate patient alert
+            function generateAlert() {
+                alertActive = true;
+                
+                // Generate random vital signs
+                currentVitals = generateRandomVitals();
+                
+            // Display vital signs on monitor
+                document.getElementById('temperature').innerHTML = `<span>Temp:</span> ${currentVitals.temperature}°F`;
+                document.getElementById('blood-pressure').innerHTML = `<span>BP:</span> ${currentVitals.systolic}/${currentVitals.diastolic} mmHg`;
+                document.getElementById('heart-rate').innerHTML = `<span>HR:</span> ${currentVitals.heartRate} bpm`;
+                document.getElementById('oxygen').innerHTML = `<span>O₂ Sat:</span> ${currentVitals.oxygenSat}%`;
+                
+                // Determine patient condition
+                const condition = determineCondition(currentVitals);
+                
+                // Generate treatment options (1 correct, 3 incorrect)
+                generateTreatmentOptions(condition);
+                
+                // Show alert
+                alertContainer.style.display = 'block';
+                
+                // Show timer bar
+                timerBar.style.display = 'block';
+                timerBar.classList.add('countdown');
+                
+                // Set duration of the countdown animation based on the current response time
+                timerBar.style.animationDuration = `${responseTime/1000}s`;
+                
+                // Set timeout for response using the current response time
+                alertTimeoutId = setTimeout(function() {
+                    if (gameActive) {
+                        endGame('timeout');
+                    }
+                }, responseTime);
+            }
+            
+            // Generate random vital signs
+            function generateRandomVitals() {
+                // Generate random vital signs with probabilities weighted toward abnormal values
+                const vitals = {};
+                
+                const normalProbability = 0.3; // 30% chance of normal vitals
+                
+                if (Math.random() < normalProbability) {
+                    // Normal vitals
+                    vitals.temperature = (Math.random() * 0.8 + 97.8).toFixed(1);
+                    vitals.systolic = Math.floor(Math.random() * 20 + 110);
+                    vitals.diastolic = Math.floor(Math.random() * 10 + 70);
+                    vitals.heartRate = Math.floor(Math.random() * 20 + 60);
+                    vitals.oxygenSat = Math.floor(Math.random() * 3 + 97);
+                } else {
+                    // Abnormal vitals - randomly choose which vital sign is abnormal
+                    const abnormalType = Math.floor(Math.random() * 4);
+                    
+                    switch (abnormalType) {
+                        case 0: // Fever
+                            vitals.temperature = (Math.random() * 3 + 100.5).toFixed(1);
+                            vitals.systolic = Math.floor(Math.random() * 20 + 110);
+                            vitals.diastolic = Math.floor(Math.random() * 10 + 70);
+                            vitals.heartRate = Math.floor(Math.random() * 20 + 80); // Slightly elevated with fever
+                            vitals.oxygenSat = Math.floor(Math.random() * 3 + 97);
+                            break;
+                        case 1: // Hypertension
+                            vitals.temperature = (Math.random() * 0.8 + 97.8).toFixed(1);
+                            vitals.systolic = Math.floor(Math.random() * 40 + 150);
+                            vitals.diastolic = Math.floor(Math.random() * 20 + 90);
+                            vitals.heartRate = Math.floor(Math.random() * 20 + 60);
+                            vitals.oxygenSat = Math.floor(Math.random() * 3 + 97);
+                            break;
+                        case 2: // Tachycardia
+                            vitals.temperature = (Math.random() * 0.8 + 97.8).toFixed(1);
+                            vitals.systolic = Math.floor(Math.random() * 20 + 110);
+                            vitals.diastolic = Math.floor(Math.random() * 10 + 70);
+                            vitals.heartRate = Math.floor(Math.random() * 40 + 120);
+                            vitals.oxygenSat = Math.floor(Math.random() * 3 + 97);
+                            break;
+                        case 3: // Hypoxia
+                            vitals.temperature = (Math.random() * 0.8 + 97.8).toFixed(1);
+                            vitals.systolic = Math.floor(Math.random() * 20 + 110);
+                            vitals.diastolic = Math.floor(Math.random() * 10 + 70);
+                            vitals.heartRate = Math.floor(Math.random() * 20 + 60);
+                            vitals.oxygenSat = Math.floor(Math.random() * 8 + 87); // Adjusted to 87-94 range
+                            break;
+                    }
+                }
+                
+                return vitals;
+            }
+            
+            // Determine patient condition based on vital signs
+            function determineCondition(vitals) {
+                if (parseFloat(vitals.temperature) > 100.4) {
+                    return "fever";
+                }
+                if (vitals.systolic > 140 || vitals.diastolic > 90) {
+                    return "high blood pressure";
+                }
+                if (vitals.systolic < 90 || vitals.diastolic < 60) {
+                    return "low blood pressure";
+                }
+                if (vitals.heartRate > 100) {
+                    return "high heart rate";
+                }
+                if (vitals.heartRate < 50) {
+                    return "low heart rate";
+                }
+                if (vitals.oxygenSat < 95) { // Changed from 90 to 95 as requested
+                    return "low oxygen";
+                }
+                return "normal";
+            }
+            
+            // Generate treatment options
+            function generateTreatmentOptions(condition) {
+                // Clear previous options
+                treatmentOptions.innerHTML = '';
+                
+                // Find correct treatment for the condition
+                const correctTreatments = treatments.filter(t => t.conditions.includes(condition));
+                const correctTreatment = correctTreatments[Math.floor(Math.random() * correctTreatments.length)];
+                
+                // Create array of incorrect treatments
+                const incorrectTreatments = treatments.filter(t => !t.conditions.includes(condition));
+                
+                // Shuffle and select 3 incorrect treatments
+                const shuffledIncorrect = incorrectTreatments.sort(() => 0.5 - Math.random()).slice(0, 3);
+                
+                // Combine all treatments and shuffle
+                const allTreatments = [correctTreatment, ...shuffledIncorrect].sort(() => 0.5 - Math.random());
+                
+                // Create buttons for each treatment
+                allTreatments.forEach(treatment => {
+                    const button = document.createElement('button');
+                    button.classList.add('treatment-btn');
+                    button.textContent = treatment.name;
+                    
+                    button.addEventListener('click', function() {
+                        handleTreatmentSelection(treatment, correctTreatment, condition);
+                    });
+                    
+                    treatmentOptions.appendChild(button);
+                });
+            }
+            
+            // Handle treatment selection
+            function handleTreatmentSelection(selectedTreatment, correctTreatment, condition) {
+                // Clear the alert timeout
+                clearTimeout(alertTimeoutId);
+                
+                // Check if the selection is correct
+                if (selectedTreatment === correctTreatment) {
+                    // Award points based on condition severity
+                    let points = 10;
+                    if (condition !== "normal") {
+                        points = 20;
+                    }
+                    if (condition === "low oxygen" || condition === "high blood pressure") {
+                        points = 30;
+                    }
+                    
+                    score += points;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                    
+                    // Increment successful treatments counter
+                    successfulTreatments++;
+                    
+                    // Increment level
+                    level++;
+                    document.getElementById('level-display').textContent = `Level: ${level}`;
+                    
+                    // Every 2 successful treatments, make obstacles appear more frequently
+                    // and reduce the response time
+                    if (successfulTreatments % 2 === 0) {
+                        // Reduce obstacle frequency by 30%, but not below 500ms
+                        obstacleFrequency = Math.max(500, obstacleFrequency * 0.7);
+                        
+                        // Reduce response time by 25%, but not below the minimum
+                        responseTime = Math.max(minResponseTime, responseTime * 0.75);
+                        
+                        // Increase game speed more aggressively after correct treatments
+                        gameSpeed = Math.min(maxGameSpeed, gameSpeed + 1.0);
+                        
+                        // Restart obstacle generation with new frequency
+                        startObstacleGeneration();
+                    }
+                    
+                    // Show "Correct!" message
+                    const feedbackMessage = document.getElementById('feedback-message');
+                    feedbackMessage.style.display = 'block';
+                    
+                    // Disable all treatment buttons
+                    const buttons = document.querySelectorAll('.treatment-btn');
+                    buttons.forEach(btn => {
+                        btn.disabled = true;
+                        if (btn.textContent === selectedTreatment.name) {
+                            btn.style.backgroundColor = '#4cc9f0'; // Blue for correct
+                        }
+                    });
+                    
+                    // Remove the timer bar countdown
+                    timerBar.classList.remove('countdown');
+                    
+                    // Wait a short time before closing the alert
+                    setTimeout(() => {
+                        closeAlert();
+                        // Remove all existing obstacles
+                        document.querySelectorAll('.obstacle').forEach(obs => obs.remove());
+                        // Reset successful jumps counter to delay next alert slightly
+                        successfulJumps = 0;
+                    }, 1500);
+                } else {
+                    // Wrong treatment selected
+                    endGame('treatment');
+                }
+            }
+            
+            // Close alert
+            function closeAlert() {
+                alertContainer.style.display = 'none';
+                timerBar.style.display = 'none';
+                timerBar.classList.remove('countdown');
+                document.getElementById('feedback-message').style.display = 'none';
+                alertActive = false;
+            }
+            
+            // End game
+            function endGame(reason) {
+                gameActive = false;
+                
+                // Clear intervals
+                clearInterval(obstacleInterval);
+                clearInterval(scoreInterval);
+                clearTimeout(alertTimeoutId);
+                
+                // Show game over message
+                finalScore.textContent = `Your score: ${score}`;
+                
+                // Add level information
+                const levelElement = document.createElement('p');
+                levelElement.textContent = `You reached Level: ${level}`;
+                
+                // Remove any existing reason elements to prevent duplicates
+                const existingReasons = gameOverScreen.querySelectorAll('p:not(#final-score)');
+                existingReasons.forEach(el => el.remove());
+                
+                // Create new reason text
+                let reasonText = '';
+                if (reason === 'obstacle') {
+                    reasonText = 'You ran out of lives!';
+                } else if (reason === 'timeout') {
+                    reasonText = 'You did not respond to the alert in time!';
+                } else if (reason === 'treatment') {
+                    reasonText = 'You selected the wrong treatment!';
+                }
+                
+                const reasonElement = document.createElement('p');
+                reasonElement.textContent = reasonText;
+                
+                // Add elements to game over screen
+                gameOverScreen.insertBefore(levelElement, restartBtn);
+                gameOverScreen.insertBefore(reasonElement, restartBtn);
+                
+                // Show game over screen
+                closeAlert();
+                gameOverScreen.style.display = 'block';
+            }
+            
+            // Check for collision between two elements
+            function isColliding(elem1, elem2) {
+                const rect1 = elem1.getBoundingClientRect();
+                const rect2 = elem2.getBoundingClientRect();
+                
+                return !(
+                    rect1.right < rect2.left ||
+                    rect1.left > rect2.right ||
+                    rect1.bottom < rect2.top ||
+                    rect1.top > rect2.bottom
+                );
+            }
+        });
+    </script>
+</body>
+</html>
