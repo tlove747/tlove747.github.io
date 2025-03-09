@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixelized Zelda-like Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+    
+    #game-container {
+      position: relative;
+      width: 640px;
+      height: 480px;
+      background-color: #222;
+    }
+    
+    canvas {
+      display: block;
+      background-color: #553800;
+    }
+    
+    #ui-container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+    
+    .heart {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-color: #ff0000;
+      margin-right: 5px;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+    
+    .heart.empty {
+      background-color: #555;
+    }
+    
+    #stage-info {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      font-size: 16px;
+      z-index: 10;
+    }
+    
+    #stopwatch {
+      position: absolute;
+      top: 40px;
+      right: 10px;
+      color: white;
+      font-size: 16px;
+      display: none;
+      z-index: 10;
+    }
+    
+    #game-over, #game-win {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 32px;
+      z-index: 20;
+    }
+    
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #controls-info {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      color: white;
+      font-size: 12px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas" width="640" height="480"></canvas>
+    <div id="ui-container"></div>
+    <div id="stage-info">Stage: 1</div>
+    <div id="stopwatch">Time: 00:00</div>
+    <div id="controls-info">Controls: WASD to move, Left-click to attack, Right-click to shield, L near button to skip to boss</div>
+    <div id="game-over">
+      Game Over
+      <button id="restart-btn">Restart Game</button>
+    </div>
+    <div id="game-win">
+      You Win!
+      <button id="restart-win-btn">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    // Game setup
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    const uiContainer = document.getElementById('ui-container');
+    const stageInfo = document.getElementById('stage-info');
+    const stopwatchDisplay = document.getElementById('stopwatch');
+    const gameOverScreen = document.getElementById('game-over');
+    const gameWinScreen = document.getElementById('game-win');
+    const restartBtn = document.getElementById('restart-btn');
+    const restartWinBtn = document.getElementById('restart-win-btn');
+    
+    // Game constants
+    const TILE_SIZE = 32;
+    const PLAYER_SPEED = 3;
+    const ENEMY_SPEED = 1.5;
+    const MAX_ENEMIES = 4;
+    const MAX_HEARTS = 5;
+    const MAX_STAGES = 15;
+    const BOSS_HEALTH = 15;
+    const BOSS_SIZE = TILE_SIZE * 2;
+    
+    // Game state
+    let currentStage = 1;
+    let playerHealth = 5;
+    let gameRunning = true;
+    let enemies = [];
+    let heartPickups = [];
+    let boss = null;
+    let bossHealth = BOSS_HEALTH;
+    let secretButton = null;
+    let stopwatchTime = 0;
+    let stopwatchInterval = null;
+    
+    // Player object
+    const player = {
+      x: canvas.width / 2 - TILE_SIZE / 2,
+      y: canvas.height / 2 - TILE_SIZE / 2,
+      width: TILE_SIZE,
+      height: TILE_SIZE,
+      direction: 'down',
+      swordActive: false,
+      shieldActive: false,
+      invulnerable: 0
+    };
+    
+    // Key states
+    const keys = {
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+      l: false
+    };
+    
+    // Initialize UI hearts
+    function initUI() {
+      uiContainer.innerHTML = '';
+      for (let i = 0; i < MAX_HEARTS; i++) {
+        const heart = document.createElement('div');
+        heart.className = i < playerHealth ? 'heart' : 'heart empty';
+        uiContainer.appendChild(heart);
+      }
+    }
+    
+    // Update UI hearts
+    function updateUIHearts() {
+      const hearts = uiContainer.getElementsByClassName('heart');
+      for (let i = 0; i < hearts.length; i++) {
+        hearts[i].className = i < playerHealth ? 'heart' : 'heart empty';
+      }
+    }
+    
+    // Generate stage with enemies and hearts
+    function generateStage(stageNumber) {
+      // Clear previous stage
+      enemies = [];
+      heartPickups = [];
+      boss = null;
+      secretButton = null;
+      
+      // Update stage info
+      stageInfo.textContent = `Stage: ${stageNumber}`;
+      
+      // Boss stage (15)
+      if (stageNumber === 15) {
+        // Create boss
+        boss = {
+          x: canvas.width / 2 - BOSS_SIZE / 2,
+          y: canvas.height / 2 - BOSS_SIZE / 2,
+          width: BOSS_SIZE,
+          height: BOSS_SIZE,
+          health: bossHealth,
+          moveTimer: 0,
+          direction: 'down',
+          speed: ENEMY_SPEED * 1.2
+        };
+        
+        // Add hearts for boss battle
+        for (let i = 0; i < 8; i++) {
+          addHeart();
+        }
+        
+        // Start stopwatch
+        startStopwatch();
+      }
+      // First stage with secret button
+      else if (stageNumber === 1) {
+        // Add secret button
+        secretButton = {
+          x: TILE_SIZE / 2,
+          y: canvas.height / 2,
+          width: TILE_SIZE,
+          height: TILE_SIZE
+        };
+        
+        // Add enemies
+        const enemyCount = Math.min(MAX_ENEMIES, 1 + Math.floor(stageNumber / 3));
+        for (let i = 0; i < enemyCount; i++) {
+          addEnemy();
+        }
+        
+        // Add hearts
+        addHeart();
+        if (Math.random() > 0.5) addHeart();
+      }
+      // Normal stages (2-14)
+      else {
+        // Add enemies (more enemies in later stages)
+        const enemyCount = Math.min(MAX_ENEMIES, 1 + Math.floor(stageNumber / 3));
+        for (let i = 0; i < enemyCount; i++) {
+          addEnemy();
+        }
+        
+        // Add hearts
+        addHeart();
+        if (Math.random() > 0.5) addHeart();
+      }
+    }
+    
+    // Helper to add a enemy at a valid position
+    function addEnemy() {
+      const enemy = {
+        x: Math.random() * (canvas.width - TILE_SIZE * 3) + TILE_SIZE,
+        y: Math.random() * (canvas.height - TILE_SIZE * 3) + TILE_SIZE,
+        width: TILE_SIZE,
+        height: TILE_SIZE,
+        direction: ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)],
+        moveTimer: 0,
+        moveInterval: 60 + Math.random() * 60,
+        speed: ENEMY_SPEED * (1 + currentStage / 10)
+      };
+      
+      // Make sure enemy isn't too close to player
+      if (Math.abs(enemy.x - player.x) < TILE_SIZE * 3 && 
+          Math.abs(enemy.y - player.y) < TILE_SIZE * 3) {
+        addEnemy(); // Try again
+        return;
+      }
+      
+      enemies.push(enemy);
+    }
+    
+    // Helper to add a heart at a valid position
+    function addHeart() {
+      const heart = {
+        x: Math.random() * (canvas.width - TILE_SIZE * 2) + TILE_SIZE,
+        y: Math.random() * (canvas.height - TILE_SIZE * 2) + TILE_SIZE,
+        width: TILE_SIZE,
+        height: TILE_SIZE,
+        collected: false
+      };
+      
+      // Check if position is valid
+      let valid = true;
+      
+      // Not too close to player
+      if (Math.abs(heart.x - player.x) < TILE_SIZE * 2 && 
+          Math.abs(heart.y - player.y) < TILE_SIZE * 2) {
+        valid = false;
+      }
+      
+      // Not too close to enemies
+      for (const enemy of enemies) {
+        if (Math.abs(heart.x - enemy.x) < TILE_SIZE * 2 && 
+            Math.abs(heart.y - enemy.y) < TILE_SIZE * 2) {
+          valid = false;
+          break;
+        }
+      }
+      
+      // Not too close to boss
+      if (boss && Math.abs(heart.x - boss.x) < BOSS_SIZE * 1.5 && 
+          Math.abs(heart.y - boss.y) < BOSS_SIZE * 1.5) {
+        valid = false;
+      }
+      
+      // Not too close to secret button
+      if (secretButton && Math.abs(heart.x - secretButton.x) < TILE_SIZE * 2 && 
+          Math.abs(heart.y - secretButton.y) < TILE_SIZE * 2) {
+        valid = false;
+      }
+      
+      if (!valid) {
+        addHeart(); // Try again
+        return;
+      }
+      
+      heartPickups.push(heart);
+    }
+    
+    // Move player based on keyboard input
+    function movePlayer() {
+      let dx = 0;
+      let dy = 0;
+      
+      if (keys.w) {
+        dy -= PLAYER_SPEED;
+        player.direction = 'up';
+      }
+      if (keys.s) {
+        dy += PLAYER_SPEED;
+        player.direction = 'down';
+      }
+      if (keys.a) {
+        dx -= PLAYER_SPEED;
+        player.direction = 'left';
+      }
+      if (keys.d) {
+        dx += PLAYER_SPEED;
+        player.direction = 'right';
+      }
+      
+      // Apply movement with boundary check
+      const newX = player.x + dx;
+      const newY = player.y + dy;
+      
+      if (newX >= 0 && newX <= canvas.width - player.width) {
+        player.x = newX;
+      }
+      if (newY >= 0 && newY <= canvas.height - player.height) {
+        player.y = newY;
+      }
+    }
+    
+    // Move enemies
+    function moveEnemies() {
+      // Regular enemies
+      for (const enemy of enemies) {
+        enemy.moveTimer++;
+        
+        // Change direction randomly
+        if (enemy.moveTimer >= enemy.moveInterval) {
+          enemy.direction = ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)];
+          enemy.moveTimer = 0;
+          enemy.moveInterval = 60 + Math.random() * 60;
+        }
+        
+        // Move based on direction
+        let dx = 0;
+        let dy = 0;
+        
+        switch (enemy.direction) {
+          case 'up': dy -= enemy.speed; break;
+          case 'down': dy += enemy.speed; break;
+          case 'left': dx -= enemy.speed; break;
+          case 'right': dx += enemy.speed; break;
+        }
+        
+        // Apply movement with boundary check
+        const newX = enemy.x + dx;
+        const newY = enemy.y + dy;
+        
+        if (newX >= 0 && newX <= canvas.width - enemy.width) {
+          enemy.x = newX;
+        } else {
+          enemy.direction = enemy.direction === 'left' ? 'right' : 'left';
+        }
+        
+        if (newY >= 0 && newY <= canvas.height - enemy.height) {
+          enemy.y = newY;
+        } else {
+          enemy.direction = enemy.direction === 'up' ? 'down' : 'up';
+        }
+      }
+      
+      // Boss movement (follows player)
+      if (boss) {
+        boss.moveTimer++;
+        
+        if (boss.moveTimer >= 30) {
+          // Boss tracks player
+          const dx = player.x - boss.x;
+          const dy = player.y - boss.y;
+          
+          if (Math.abs(dx) > Math.abs(dy)) {
+            boss.direction = dx > 0 ? 'right' : 'left';
+          } else {
+            boss.direction = dy > 0 ? 'down' : 'up';
+          }
+          
+          boss.moveTimer = 0;
+        }
+        
+        // Move based on direction
+        let dx = 0;
+        let dy = 0;
+        
+        switch (boss.direction) {
+          case 'up': dy -= boss.speed; break;
+          case 'down': dy += boss.speed; break;
+          case 'left': dx -= boss.speed; break;
+          case 'right': dx += boss.speed; break;
+        }
+        
+        // Apply movement with boundary check
+        const newX = boss.x + dx;
+        const newY = boss.y + dy;
+        
+        if (newX >= 0 && newX <= canvas.width - boss.width) {
+          boss.x = newX;
+        } else {
+          boss.direction = boss.direction === 'left' ? 'right' : 'left';
+        }
+        
+        if (newY >= 0 && newY <= canvas.height - boss.height) {
+          boss.y = newY;
+        } else {
+          boss.direction = boss.direction === 'up' ? 'down' : 'up';
+        }
+      }
+    }
+    
+    // Check for all collisions
+    function checkCollisions() {
+      // Secret button in stage 1
+      if (currentStage === 1 && secretButton && keys.l) {
+        if (Math.abs(player.x - secretButton.x) < TILE_SIZE * 2 &&
+            Math.abs(player.y - secretButton.y) < TILE_SIZE * 2) {
+          // Teleport to boss with special conditions
+          currentStage = 15;
+          playerHealth = 10;
+          bossHealth = 1;
+          updateUIHearts();
+          player.x = canvas.width / 2 - TILE_SIZE / 2;
+          player.y = canvas.height / 2 - TILE_SIZE / 2;
+          generateStage(currentStage);
+          return;
+        }
+      }
+      
+      // Sword collision with enemies
+      if (player.swordActive) {
+        // Calculate sword position based on player direction
+        let swordX = player.x;
+        let swordY = player.y;
+        let swordWidth = player.width;
+        let swordHeight = player.height;
+        
+        switch (player.direction) {
+          case 'up':
+            swordY -= TILE_SIZE;
+            break;
+          case 'down':
+            swordY += TILE_SIZE;
+            break;
+          case 'left':
+            swordX -= TILE_SIZE;
+            break;
+          case 'right':
+            swordX += TILE_SIZE;
+            break;
+        }
+        
+        // Check if sword hits enemies
+        for (let i = enemies.length - 1; i >= 0; i--) {
+          const enemy = enemies[i];
+          
+          if (swordX < enemy.x + enemy.width &&
+              swordX + swordWidth > enemy.x &&
+              swordY < enemy.y + enemy.height &&
+              swordY + swordHeight > enemy.y) {
+            enemies.splice(i, 1);
+          }
+        }
+        
+        // Check if sword hits boss
+        if (boss && 
+            swordX < boss.x + boss.width &&
+            swordX + swordWidth > boss.x &&
+            swordY < boss.y + boss.height &&
+            swordY + swordHeight > boss.y) {
+          boss.health--;
+          
+          // Knockback effect
+          const knockback = 15;
+          switch (player.direction) {
+            case 'up': boss.y -= knockback; break;
+            case 'down': boss.y += knockback; break;
+            case 'left': boss.x -= knockback; break;
+            case 'right': boss.x += knockback; break;
+          }
+          
+          // Keep boss within boundaries
+          boss.x = Math.max(0, Math.min(canvas.width - boss.width, boss.x));
+          boss.y = Math.max(0, Math.min(canvas.height - boss.height, boss.y));
+          
+          // Check if boss is defeated
+          if (boss.health <= 0) {
+            boss = null;
+            stopStopwatch();
+            gameWin();
+          }
+        }
+      }
+      
+      // Enemy collision with player
+      if (player.invulnerable <= 0) {
+        for (const enemy of enemies) {
+          if (player.x < enemy.x + enemy.width &&
+              player.x + player.width > enemy.x &&
+              player.y < enemy.y + enemy.height &&
+              player.y + player.height > enemy.y) {
+            
+            // Check shield protection
+            let shieldProtects = false;
+            if (player.shieldActive) {
+              switch (player.direction) {
+                case 'up': shieldProtects = enemy.y < player.y; break;
+                case 'down': shieldProtects = enemy.y > player.y; break;
+                case 'left': shieldProtects = enemy.x < player.x; break;
+                case 'right': shieldProtects = enemy.x > player.x; break;
+              }
+            }
+            
+            if (!shieldProtects) {
+              playerHealth--;
+              updateUIHearts();
+              player.invulnerable = 60; // 1 second invulnerability
+              
+              if (playerHealth <= 0) {
+                gameOver();
+              }
+              break;
+            }
+          }
+        }
+        
+        // Boss collision with player
+        if (boss && 
+            player.x < boss.x + boss.width &&
+            player.x + player.width > boss.x &&
+            player.y < boss.y + boss.height &&
+            player.y + player.height > boss.y) {
+          
+          // Check shield protection
+          let shieldProtects = false;
+          if (player.shieldActive) {
+            switch (player.direction) {
+              case 'up': shieldProtects = boss.y < player.y; break;
+              case 'down': shieldProtects = boss.y > player.y; break;
+              case 'left': shieldProtects = boss.x < player.x; break;
+              case 'right': shieldProtects = boss.x > player.x; break;
+            }
+          }
+          
+          if (!shieldProtects) {
+            playerHealth -= 2; // Boss does double damage
+            updateUIHearts();
+            player.invulnerable = 60; // 1 second invulnerability
+            
+            if (playerHealth <= 0) {
+              gameOver();
+            }
+          }
+        }
+      }
+      
+      // Heart pickup collision
+      for (let i = heartPickups.length - 1; i >= 0; i--) {
+        const heart = heartPickups[i];
+        
+        if (!heart.collected &&
+            player.x < heart.x + heart.width &&
+            player.x + player.width > heart.x &&
+            player.y < heart.y + heart.height &&
+            player.y + player.height > heart.y) {
+          
+          if (playerHealth < MAX_HEARTS) {
+            playerHealth++;
+            updateUIHearts();
+          }
+          heartPickups.splice(i, 1);
+        }
+      }
+      
+      // Check if stage is cleared
+      if ((currentStage === 15 && boss === null) || 
+          (currentStage !== 15 && enemies.length === 0)) {
+        if (currentStage === MAX_STAGES) {
+          gameWin();
+        } else {
+          nextStage();
+        }
+      }
+    }
+    
+    // Render everything
+    function render() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw background pattern
+      ctx.fillStyle = '#553800';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.fillStyle = '#704C14';
+      for (let y = 0; y < canvas.height; y += TILE_SIZE * 2) {
+        for (let x = 0; x < canvas.width; x += TILE_SIZE * 2) {
+          ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+          ctx.fillRect(x + TILE_SIZE, y + TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
+      }
+      
+      // Draw secret button (stage 1)
+      if (currentStage === 1 && secretButton) {
+        ctx.fillStyle = '#FFD700'; // Gold
+        ctx.fillRect(secretButton.x, secretButton.y, secretButton.width, secretButton.height);
+      }
+      
+      // Draw hearts
+      for (const heart of heartPickups) {
+        if (!heart.collected) {
+          ctx.fillStyle = '#FF0000';
+          
+          // Draw heart shape
+          ctx.beginPath();
+          const centerX = heart.x + heart.width / 2;
+          const centerY = heart.y + heart.height / 2;
+          const size = heart.width * 0.8;
+          
+          ctx.moveTo(centerX, centerY - size / 4);
+          ctx.bezierCurveTo(
+            centerX - size / 2, centerY - size / 2,
+            centerX - size / 2, centerY + size / 4,
+            centerX, centerY + size / 2
+          );
+          ctx.bezierCurveTo(
+            centerX + size / 2, centerY + size / 4,
+            centerX + size / 2, centerY - size / 2,
+            centerX, centerY - size / 4
+          );
+          ctx.fill();
+        }
+      }
+      
+      // Draw enemies
+      for (const enemy of enemies) {
+        ctx.fillStyle = '#FF5252'; // Red
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      }
+      
+      // Draw boss
+      if (boss) {
+        ctx.fillStyle = '#8B0000'; // Dark red
+        ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+        
+        // Draw boss health bar
+        const healthBarWidth = boss.width;
+        const healthBarHeight = 8;
+        const healthPercentage = boss.health / BOSS_HEALTH;
+        
+        ctx.fillStyle = '#333';
+        ctx.fillRect(boss.x, boss.y - 15, healthBarWidth, healthBarHeight);
+        ctx.fillStyle = '#FF0000';
+        ctx.fillRect(boss.x, boss.y - 15, healthBarWidth * healthPercentage, healthBarHeight);
+      }
+      
+      // Draw player (with invulnerability flashing)
+      if (player.invulnerable <= 0 || Math.floor(player.invulnerable / 5) % 2 === 0) {
+        ctx.fillStyle = '#4CAF50'; // Green
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+        
+        // Draw direction indicator
+        ctx.fillStyle = '#FFFFFF';
+        switch (player.direction) {
+          case 'up':
+            ctx.fillRect(player.x + player.width / 3, player.y, player.width / 3, player.height / 3);
+            break;
+          case 'down':
+            ctx.fillRect(player.x + player.width / 3, player.y + player.height * 2/3, player.width / 3, player.height / 3);
+            break;
+          case 'left':
+            ctx.fillRect(player.x, player.y + player.height / 3, player.width / 3, player.height / 3);
+            break;
+          case 'right':
+            ctx.fillRect(player.x + player.width * 2/3, player.y + player.height / 3, player.width / 3, player.height / 3);
+            break;
+        }
+      }
+      
+      // Draw shield if active
+      if (player.shieldActive) {
+        ctx.fillStyle = '#00BFFF'; // Light blue
+        switch (player.direction) {
+          case 'up':
+            ctx.fillRect(player.x, player.y - TILE_SIZE / 2, player.width, TILE_SIZE / 2);
+            break;
+          case 'down':
+            ctx.fillRect(player.x, player.y + player.height, player.width, TILE_SIZE / 2);
+            break;
+          case 'left':
+            ctx.fillRect(player.x - TILE_SIZE / 2, player.y, TILE_SIZE / 2, player.height);
+            break;
+          case 'right':
+            ctx.fillRect(player.x + player.width, player.y, TILE_SIZE / 2, player.height);
+            break;
+        }
+      }
+      
+      // Draw sword if active
+      if (player.swordActive) {
+        ctx.fillStyle = '#FFC107'; // Yellow
+        switch (player.direction) {
+          case 'up':
+            ctx.fillRect(player.x + player.width / 3, player.y - TILE_SIZE, player.width / 3, TILE_SIZE);
+            break;
+          case 'down':
+            ctx.fillRect(player.x + player.width / 3, player.y + player.height, player.width / 3, TILE_SIZE);
+            break;
+          case 'left':
+            ctx.fillRect(player.x - TILE_SIZE, player.y + player.height / 3, TILE_SIZE, player.height / 3);
+            break;
+          case 'right':
+            ctx.fillRect(player.x + player.width, player.y + player.height / 3, TILE_SIZE, player.height / 3);
+            break;
+        }
+      }
+    }
+    
+    // Stopwatch functions
+    function startStopwatch() {
+      stopwatchTime = 0;
+      stopwatchDisplay.style.display = 'block';
+      updateStopwatch();
+      stopwatchInterval = setInterval(updateStopwatch, 1000);
+    }
+    
+    function stopStopwatch() {
+      clearInterval(stopwatchInterval);
+    }
+    
+    function updateStopwatch() {
+      stopwatchTime++;
+      const minutes = Math.floor(stopwatchTime / 60).toString().padStart(2, '0');
+      const seconds = (stopwatchTime % 60).toString().padStart(2, '0');
+      stopwatchDisplay.textContent = `Time: ${minutes}:${seconds}`;
+    }
+    
+    // Game state functions
+    function nextStage() {
+      currentStage++;
+      player.x = canvas.width / 2 - TILE_SIZE / 2;
+      player.y = canvas.height / 2 - TILE_SIZE / 2;
+      generateStage(currentStage);
+    }
+    
+    function gameOver() {
+      gameRunning = false;
+      gameOverScreen.style.display = 'flex';
+    }
+    
+    function gameWin() {
+      gameRunning = false;
+      gameWinScreen.style.display = 'flex';
+    }
+    
+    function restartGame() {
+      currentStage = 1;
+      playerHealth = 5;
+      gameRunning = true;
+      bossHealth = BOSS_HEALTH;
+      player.x = canvas.width / 2 - TILE_SIZE / 2;
+      player.y = canvas.height / 2 - TILE_SIZE / 2;
+      player.direction = 'down';
+      player.invulnerable = 0;
+      
+      gameOverScreen.style.display = 'none';
+      gameWinScreen.style.display = 'none';
+      stopwatchDisplay.style.display = 'none';
+      stopStopwatch();
+      
+      updateUIHearts();
+      generateStage(currentStage);
+    }
+    
+    // Game loop
+    function gameLoop() {
+      if (gameRunning) {
+        // Update
+        if (player.invulnerable > 0) player.invulnerable--;
+        movePlayer();
+        moveEnemies();
+        checkCollisions();
+        
+        // Render
+        render();
+      }
+      
+      // Request next frame
+      requestAnimationFrame(gameLoop);
+    }
+    
+    // Event listeners
+    window.addEventListener('keydown', (e) => {
+      switch (e.key.toLowerCase()) {
+        case 'w': keys.w = true; break;
+        case 'a': keys.a = true; break;
+        case 's': keys.s = true; break;
+        case 'd': keys.d = true; break;
+        case 'l': keys.l = true; break;
+      }
+    });
+    
+    window.addEventListener('keyup', (e) => {
+      switch (e.key.toLowerCase()) {
+        case 'w': keys.w = false; break;
+        case 'a': keys.a = false; break;
+        case 's': keys.s = false; break;
+        case 'd': keys.d = false; break;
+        case 'l': keys.l = false; break;
+      }
+    });
+    
+    canvas.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      if (e.button === 0) { // Left click for sword
+        player.swordActive = true;
+        setTimeout(() => {
+          player.swordActive = false;
+        }, 300); // Sword active for 300ms
+      } else if (e.button === 2) { // Right click for shield
+        player.shieldActive = true;
+      }
+    });
+    
+    canvas.addEventListener('mouseup', (e) => {
+      e.preventDefault();
+      if (e.button === 2) { // Release right click to stop shield
+        player.shieldActive = false;
+      }
+    });
+    
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); // Prevent context menu on right click
+    });
+    
+    restartBtn.addEventListener('click', restartGame);
+    restartWinBtn.addEventListener('click', restartGame);
+    
+    // Start the game
+    initUI();
+    generateStage(currentStage);
+    gameLoop();
+  </script>
+</body>
+</html>
