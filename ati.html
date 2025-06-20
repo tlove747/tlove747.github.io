@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATI Report Analyzer (HTML Upload)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #005a9c;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .instructions {
+            background-color: #e9f5ff;
+            border: 1px solid #bce8f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        ol li { margin-bottom: 10px; font-size: 1.1rem; }
+        #fileInput { display: none; }
+        .file-label {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+        .file-label:hover { background-color: #218838; }
+        #fileName { margin-left: 15px; font-style: italic; color: #555; }
+        #status, #error {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #error { color: #d9534f; background-color: #f2dede; border: 1px solid #ebccd1; }
+        #status { color: #31708f; background-color: #d9edf7; border: 1px solid #bce8f1; }
+        #results {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e0f2fe;
+            border-left: 5px solid #0ea5e9;
+            border-radius: 5px;
+        }
+        .result-item {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-item span {
+            font-weight: bold;
+            color: #dc2626;
+            font-size: 1.8rem;
+            background-color: #fff;
+            padding: 2px 12px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-width: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ATI Report Analyzer (from Saved Webpage)</h1>
+        
+        <div class="instructions">
+            <h3>How to Use</h3>
+            <ol>
+                <li>On the ATI report page in your browser, <strong>right-click</strong> and choose <strong>"Save As..."</strong>.</li>
+                <li>Set "Save as type" to <strong>"Webpage, Complete"</strong> and save the file.</li>
+                <li>Click the button below and upload the <strong><code>.html</code></strong> file you just saved.</li>
+            </ol>
+        </div>
+
+        <label for="fileInput" class="file-label">Choose Saved HTML Report</label>
+        <input type="file" id="fileInput" accept=".html, .htm">
+        <span id="fileName">No file selected</span>
+
+        <div id="status" style="display:none;"></div>
+        <div id="error" style="display:none;"></div>
+
+        <div id="results" style="display:none;">
+            <h2>Analysis Results</h2>
+            <div class="result-item">Number of students: <span id="studentResult">0</span></div>
+            <hr>
+            <div class="result-item">Items with low discrimination (-1.0 to 0.10): <span id="discriminationResult">0</span></div>
+            <div class="result-item">Items with 100% correct response rate: <span id="correctResult">0</span></div>
+            <div class="result-item">Items with ≥50% incorrect response rate: <span id="incorrectResult">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Reset UI
+            document.getElementById('fileName').textContent = file.name;
+            const statusEl = document.getElementById('status');
+            const errorEl = document.getElementById('error');
+            const resultsEl = document.getElementById('results');
+            statusEl.textContent = 'Reading and analyzing HTML file...';
+            statusEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            resultsEl.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const htmlString = e.target.result;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlString, 'text/html');
+                analyzeHtml(doc);
+            };
+            reader.readAsText(file);
+        }
+
+        function analyzeHtml(doc) {
+            const statusEl = document.getElementById('status');
+            const errorEl = document.getElementById('error');
+            const resultsEl = document.getElementById('results');
+            
+            // --- Find Student Count ---
+            let studentCount = 0;
+            const institutionTable = doc.querySelector('.grid-institution-table table');
+            if (institutionTable) {
+                const studentCell = institutionTable.querySelector('tbody tr td:nth-child(3)');
+                if (studentCell) {
+                    studentCount = parseInt(studentCell.textContent.trim(), 10);
+                }
+            }
+            
+            // --- Find Question Data Table ---
+            const questionTable = doc.querySelector('table.item-grid');
+
+            if (!questionTable) {
+                errorEl.textContent = 'Could not find the question data table in the HTML file. Please ensure you saved the correct page as "Webpage, Complete".';
+                errorEl.style.display = 'block';
+                statusEl.style.display = 'none';
+                return;
+            }
+
+            const rows = questionTable.querySelectorAll('tbody tr');
+            let rowsProcessed = 0;
+            let discriminationCount = 0;
+            let perfectScoreCount = 0;
+            let highIncorrectCount = 0;
+
+            for (const row of rows) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 11) continue;
+
+                const discriminationStr = cells[7].textContent.trim();
+                const correctRateStr = cells[8].textContent.trim();
+                const incorrectRateStr = cells[10].textContent.trim();
+
+                const correctRate = parseFloat(correctRateStr);
+                const incorrectRate = parseFloat(incorrectRateStr);
+                
+                rowsProcessed++;
+
+                // --- THIS IS THE FIX ---
+                // Only count discrimination if it's a number. Do NOT count 'N/A'.
+                if (discriminationStr !== 'N/A' && parseFloat(discriminationStr) <= 0.10) {
+                    discriminationCount++;
+                }
+
+                // Check for 100% correct
+                if (correctRate === 100) {
+                    perfectScoreCount++;
+                }
+
+                // Check for 50% or more incorrect
+                if (incorrectRate >= 50) {
+                    highIncorrectCount++;
+                }
+            }
+
+            if (rowsProcessed === 0) {
+                errorEl.textContent = 'Found the table, but could not process any question rows.';
+                errorEl.style.display = 'block';
+                statusEl.style.display = 'none';
+                return;
+            }
+            
+            statusEl.textContent = `Analysis complete. Found and processed ${rowsProcessed} question items.`;
+            
+            resultsEl.style.display = 'block';
+            document.getElementById('studentResult').textContent = studentCount || 'Not Found';
+            document.getElementById('discriminationResult').textContent = discriminationCount;
+            document.getElementById('correctResult').textContent = perfectScoreCount;
+            document.getElementById('incorrectResult').textContent = highIncorrectCount;
+        }
+    </script>
+
+</body>
+</html>
